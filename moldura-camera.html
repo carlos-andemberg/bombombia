@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Moldura da Camera</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<!--
+  ================================================================
+   MOLDURA ANIMADA SO PRA CAMERA  -  fonte "Navegador" do OBS
+  ================================================================
+   COMO COLOCAR NO OBS
+     1. Fontes -> + -> Navegador -> marque "Arquivo local"
+     2. Escolha este arquivo. Largura 1200, Altura 780
+        (com o CONFIG padrao; abrindo no navegador ele mostra o tamanho certo)
+     3. Na lista de fontes, deixe a moldura ACIMA da camera.
+     4. Arraste / redimensione a camera ate ela encaixar dentro do anel.
+        (as bordas em volta sao transparentes: e o espaco dos coracoes)
+
+   COMO PERSONALIZAR
+     Mexa so no bloco CONFIG logo abaixo. Salvou? No OBS: botao
+     direito na fonte -> "Atualizar".
+
+   Abrindo no navegador normal, aparece um fundo escuro de exemplo
+   so pra voce visualizar. Dentro do OBS ele fica transparente.
+  ================================================================
+-->
+<script>
+const CONFIG = {
+  nome: "Bombombia",          // nome na etiqueta embaixo da câmera ("" = esconde)
+  aoVivo: true,               // selo "AO VIVO" no canto de cima
+
+  cam: { largura: 960, altura: 540 }, // área da câmera (proporção 16:9)
+  margem: 120,                        // espaço transparente em volta (corações, lacinho, etiqueta)
+  borda: 10,                          // grossura do anel
+  raio: 44,                           // cantos arredondados
+
+  cores: {
+    rosa:    "#ff5fa8",
+    lilas:   "#b57bff",
+    pessego: "#ffb28a",
+    claro:   "#ffd6ea",
+  },
+
+  coracoes: 12,               // corações subindo pelas laterais
+  brilhos: 30,                // brilhinhos piscando em volta do anel
+  laco: true,                 // lacinho no topo
+
+  fundoDemo: "auto",          // "auto" = fundo de exemplo só fora do OBS · true / false força
+};
+</script>
+
+<style>
+  :root { --rosa:#ff5fa8; --lilas:#b57bff; --pessego:#ffb28a; --claro:#ffd6ea; --rosa-glow:rgba(255,95,168,.55); }
+  * { box-sizing:border-box; }
+  html, body {
+    margin:0; padding:0; width:100%; height:100%; overflow:hidden;
+    background:transparent;
+    font-family:'Quicksand','Segoe UI',Arial,sans-serif;
+  }
+  body.demo { background:radial-gradient(ellipse at 50% 35%, #2d1b4e 0%, #180d2e 55%, #0d0718 100%); }
+  .demo-only { display:none; }
+  body.demo .demo-only { display:flex; align-items:center; justify-content:center; }
+
+  .palco { position:absolute; left:0; top:0; transform-origin:0 0; }   /* tamanho vem do script */
+  .dica.demo-only { position:absolute; left:0; right:0; bottom:16px; z-index:0; color:rgba(255,255,255,.35); font-size:20px; font-weight:700; letter-spacing:.5px; }
+
+  /* ---------- partículas ---------- */
+  .particulas { position:absolute; inset:0; overflow:hidden; z-index:1; pointer-events:none; }
+  .coracao { position:absolute; bottom:-70px; width:var(--tam); height:var(--tam); animation:subir linear infinite; }
+  .coracao i { display:block; width:100%; height:100%; animation:balancar ease-in-out infinite alternate; }
+  .coracao svg { display:block; width:100%; height:100%; fill:var(--cor); filter:drop-shadow(0 0 6px var(--cor)); opacity:.9; }
+  .brilhinho { position:absolute; width:var(--tam); height:var(--tam); margin:calc(var(--tam) / -2) 0 0 calc(var(--tam) / -2); animation:piscar ease-in-out infinite; }
+  .brilhinho svg { display:block; width:100%; height:100%; fill:#fff; filter:drop-shadow(0 0 5px var(--cor)); }
+
+  /* ---------- a moldura da câmera ---------- */
+  .cam { position:absolute; z-index:2; }
+  .cam .anel { position:absolute; left:0; top:0; display:block; overflow:visible; }
+  .cam .brilho { position:absolute; inset:0; border-radius:var(--raio); }
+  .cam .dentro {
+    position:absolute; inset:14px; border-radius:calc(var(--raio) - 12px);
+    border:2px dashed rgba(255,255,255,.28); background:rgba(255,255,255,.06);
+    color:rgba(255,255,255,.45); font-size:34px; font-weight:700;
+  }
+  .canto {
+    position:absolute; z-index:3; width:48px; height:48px; fill:var(--rosa); stroke:#fff; stroke-width:1.5px;
+    filter:drop-shadow(0 0 8px var(--rosa)); animation:pulsar 2.2s ease-in-out infinite;
+  }
+  .laco {
+    position:absolute; z-index:3; left:50%; margin-left:-110px; top:-56px; width:220px; height:124px;
+    transform-origin:50% 45%; animation:balancinho 4s ease-in-out infinite;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,.28));
+  }
+  .tag {
+    position:absolute; z-index:3; left:50%; transform:translateX(-50%); bottom:-30px;
+    display:inline-flex; align-items:center; gap:12px;
+    padding:8px 30px 10px 22px; border-radius:999px;
+    background:linear-gradient(95deg, var(--rosa), var(--lilas));
+    color:#fff; font-family:'Pacifico','Segoe Script',cursive; font-size:40px; line-height:1.25;
+    text-shadow:0 2px 6px rgba(0,0,0,.25); white-space:nowrap; overflow:hidden;
+    box-shadow:0 8px 22px rgba(0,0,0,.28), 0 0 22px var(--rosa-glow), inset 0 1px 0 rgba(255,255,255,.55);
+  }
+  .tag svg { width:30px; height:30px; fill:#fff; flex:none; animation:pulsar 1.6s ease-in-out infinite; }
+  .tag::after {                          /* reflexo passando pela etiqueta */
+    content:""; position:absolute; top:0; bottom:0; left:-40%; width:40%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.6), transparent);
+    transform:skewX(-20deg); animation:reflexo 4.5s ease-in-out infinite;
+  }
+  .ao-vivo {
+    position:absolute; z-index:3; left:56px; top:-21px;
+    display:inline-flex; align-items:center; gap:10px;
+    padding:7px 18px 7px 13px; border-radius:999px;
+    background:linear-gradient(95deg, #ff3d8f, var(--rosa));
+    color:#fff; font-weight:700; font-size:19px; letter-spacing:2px;
+    box-shadow:0 6px 18px rgba(0,0,0,.28), 0 0 16px var(--rosa-glow), inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  .ao-vivo i { width:12px; height:12px; border-radius:50%; background:#fff; animation:ping 1.4s ease-out infinite; }
+
+  /* ---------- animações ---------- */
+  @keyframes subir      { 0% { transform:translateY(0); opacity:0 } 8% { opacity:1 } 85% { opacity:1 } 100% { transform:translateY(var(--sobe)); opacity:0 } }
+  @keyframes balancar   { from { transform:translateX(-14px) rotate(-14deg) } to { transform:translateX(14px) rotate(14deg) } }
+  @keyframes piscar     { 0%,100% { transform:scale(0) rotate(0deg); opacity:0 } 50% { transform:scale(1) rotate(90deg); opacity:1 } }
+  @keyframes pulsar     { 0%,100% { transform:rotate(var(--rot,0deg)) scale(1) } 50% { transform:rotate(var(--rot,0deg)) scale(1.18) } }
+  @keyframes reflexo    { 0% { transform:translateX(0) skewX(-20deg) } 45%,100% { transform:translateX(450%) skewX(-20deg) } }
+  @keyframes balancinho { 0%,100% { transform:rotate(-4deg) } 50% { transform:rotate(4deg) } }
+  @keyframes ping       { 0% { box-shadow:0 0 0 0 rgba(255,255,255,.8) } 100% { box-shadow:0 0 0 10px rgba(255,255,255,0) } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-coracao" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></symbol>
+  <symbol id="ic-brilho" viewBox="0 0 24 24"><path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12 6.4-.6 11.4-5.6 12-12z"/></symbol>
+</svg>
+
+<template id="laco-modelo">
+  <svg class="laco" viewBox="0 0 160 90">
+    <defs>
+      <linearGradient id="gLaco" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--rosa)"/><stop offset="1" style="stop-color:var(--lilas)"/></linearGradient>
+      <linearGradient id="gLaco2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--lilas)"/><stop offset="1" style="stop-color:var(--rosa)"/></linearGradient>
+    </defs>
+    <path d="M74 50 C66 62 58 76 42 86 L62 84 C68 74 74 64 78 54 Z" fill="url(#gLaco2)" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/>
+    <path d="M86 50 C94 62 102 76 118 86 L98 84 C92 74 86 64 82 54 Z" fill="url(#gLaco2)" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/>
+    <path d="M80 42 C60 8 10 10 12 36 C14 60 58 64 80 42 Z" fill="url(#gLaco)" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>
+    <path d="M80 42 C100 8 150 10 148 36 C146 60 102 64 80 42 Z" fill="url(#gLaco)" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>
+    <path d="M76 42 C62 24 28 24 28 37 C28 50 62 52 76 42 Z" fill="#fff" opacity=".22"/>
+    <path d="M84 42 C98 24 132 24 132 37 C132 50 98 52 84 42 Z" fill="#fff" opacity=".22"/>
+    <ellipse cx="80" cy="42" rx="12" ry="10" style="fill:var(--claro);stroke:var(--rosa)" stroke-width="2"/>
+    <ellipse cx="77" cy="38" rx="4" ry="2.5" fill="#fff" opacity=".85"/>
+  </svg>
+</template>
+
+<div class="palco">
+  <div class="particulas"></div>
+  <div class="cam"></div>
+  <div class="dica demo-only"></div>
+</div>
+
+<script>
+(function () {
+  const C = CONFIG;
+  const L = C.cam.largura, A = C.cam.altura, M = C.margem;
+  const W = L + 2 * M, H = A + 2 * M;           // tamanho total do palco (= tamanho da fonte no OBS)
+
+  const palco = document.querySelector('.palco');
+  const root = document.documentElement.style;
+  const hex = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+  const rgba = (h, a) => 'rgba(' + hex(h).join(',') + ',' + a + ')';
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const escolhe = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  root.setProperty('--rosa', C.cores.rosa);
+  root.setProperty('--lilas', C.cores.lilas);
+  root.setProperty('--pessego', C.cores.pessego);
+  root.setProperty('--claro', C.cores.claro);
+  root.setProperty('--rosa-glow', rgba(C.cores.rosa, .55));
+
+  palco.style.width = W + 'px';
+  palco.style.height = H + 'px';
+  palco.style.setProperty('--sobe', -(H + 160) + 'px');
+
+  // fundo de exemplo: só fora do OBS (o OBS injeta window.obsstudio na página)
+  let demo = C.fundoDemo === true || (C.fundoDemo === 'auto' && !window.obsstudio);
+  if (/preview/.test(location.search)) demo = true;
+  if (/semfundo/.test(location.search)) demo = false;
+  if (demo) document.body.classList.add('demo');
+  document.querySelector('.dica').textContent = 'no OBS: fonte Navegador com largura ' + W + ' e altura ' + H;
+
+  // encaixa o palco no tamanho da janela / da fonte no OBS
+  function ajustar() {
+    const s = Math.min(innerWidth / W, innerHeight / H);
+    palco.style.transform = 'translate(' + (innerWidth - W * s) / 2 + 'px,' + (innerHeight - H * s) / 2 + 'px) scale(' + s + ')';
+  }
+  addEventListener('resize', ajustar); ajustar();
+
+  // anel SVG com gradiente girando + filete branco por dentro
+  const b = C.borda, r = C.raio, m = b / 2, i = b + 5;
+  const anel =
+    '<svg class="anel" width="' + L + '" height="' + A + '" viewBox="0 0 ' + L + ' ' + A + '">' +
+      '<defs><linearGradient id="gradAnel" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="' + C.cores.rosa + '"/>' +
+        '<stop offset=".45" stop-color="' + C.cores.lilas + '"/>' +
+        '<stop offset="1" stop-color="' + C.cores.pessego + '"/>' +
+        '<animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="8s" repeatCount="indefinite"/>' +
+      '</linearGradient></defs>' +
+      '<rect x="' + m + '" y="' + m + '" width="' + (L - b) + '" height="' + (A - b) + '" rx="' + r + '" fill="none" stroke="url(#gradAnel)" stroke-width="' + b + '"/>' +
+      '<rect x="' + i + '" y="' + i + '" width="' + (L - 2 * i) + '" height="' + (A - 2 * i) + '" rx="' + Math.max(r - i + m, 4) + '" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.5"/>' +
+    '</svg>';
+
+  const coracaoSVG = (classe, estilo) => '<svg class="' + classe + '" style="' + estilo + '" viewBox="0 0 24 24"><use href="#ic-coracao"/></svg>';
+  const cantos = [
+    ['left:-14px;top:-14px', '-20deg'], ['right:-14px;top:-14px', '20deg'],
+    ['left:-14px;bottom:-14px', '20deg'], ['right:-14px;bottom:-14px', '-20deg'],
+  ].map(p => coracaoSVG('canto', p[0] + ';--rot:' + p[1])).join('');
+
+  const cam = document.querySelector('.cam');
+  cam.style.cssText = 'left:' + M + 'px;top:' + M + 'px;width:' + L + 'px;height:' + A + 'px;--raio:' + r + 'px;';
+  cam.innerHTML =
+    anel +
+    '<div class="brilho" style="box-shadow:0 0 30px 3px ' + rgba(C.cores.rosa, .5) + ', inset 0 0 40px ' + rgba(C.cores.rosa, .18) + '"></div>' +
+    '<div class="demo-only dentro">câmera</div>' +
+    cantos +
+    (C.laco ? document.getElementById('laco-modelo').innerHTML : '') +
+    (C.aoVivo ? '<div class="ao-vivo"><i></i>AO VIVO</div>' : '') +
+    (C.nome ? '<div class="tag">' + coracaoSVG('', '') + '<span></span></div>' : '');
+  if (C.nome) cam.querySelector('.tag span').textContent = C.nome;
+
+  // partículas: corações sobem pelas laterais, brilhinhos piscam em volta do anel
+  const P = document.querySelector('.particulas');
+  const cores = [C.cores.rosa, C.cores.lilas, C.cores.pessego, C.cores.claro, '#ffffff'];
+
+  for (let k = 0; k < C.coracoes; k++) {
+    const d = document.createElement('div');
+    d.className = 'coracao';
+    const x = Math.random() < .5 ? rnd(10, M - 20) : rnd(M + L + 10, W - 30);
+    const dur = rnd(7, 13);
+    d.style.cssText = 'left:' + x + 'px;--tam:' + rnd(18, 44) + 'px;--cor:' + escolhe(cores) +
+      ';animation-duration:' + dur + 's;animation-delay:-' + rnd(0, dur) + 's';
+    d.innerHTML = '<i style="animation-duration:' + rnd(1.6, 3.4) + 's"><svg viewBox="0 0 24 24"><use href="#ic-coracao"/></svg></i>';
+    P.appendChild(d);
+  }
+
+  function posBrilho() {                       // um ponto perto da borda do anel
+    const lado = Math.floor(rnd(0, 4)), j = 28;
+    if (lado === 0) return [rnd(M, M + L), M + rnd(-j, j)];
+    if (lado === 1) return [rnd(M, M + L), M + A + rnd(-j, j)];
+    if (lado === 2) return [M + rnd(-j, j), rnd(M, M + A)];
+    return [M + L + rnd(-j, j), rnd(M, M + A)];
+  }
+  for (let k = 0; k < C.brilhos; k++) {
+    const d = document.createElement('div');
+    d.className = 'brilhinho';
+    const p = posBrilho(), dur = rnd(1.8, 4);
+    d.style.cssText = 'left:' + p[0] + 'px;top:' + p[1] + 'px;--tam:' + rnd(10, 26) + 'px;--cor:' + escolhe(cores) +
+      ';animation-duration:' + dur + 's;animation-delay:-' + rnd(0, dur) + 's';
+    d.innerHTML = '<svg viewBox="0 0 24 24"><use href="#ic-brilho"/></svg>';
+    P.appendChild(d);
+  }
+})();
+</script>
+</body>
+</html>

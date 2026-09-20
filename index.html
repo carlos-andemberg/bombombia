@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Molduras da Bombombia</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px;
+         font-family:'Quicksand','Segoe UI',Arial,sans-serif; color:#fff;
+         background:radial-gradient(ellipse at 50% 30%, #2d1b4e 0%, #180d2e 55%, #0d0718 100%); }
+  main { width:100%; max-width:720px; }
+  h1 { font-family:'Pacifico',cursive; font-weight:400; font-size:44px; margin:0 0 6px; text-align:center;
+       background:linear-gradient(95deg,#ff5fa8,#b57bff,#ffb28a); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  p.sub { text-align:center; margin:0 0 28px; color:rgba(255,255,255,.6); }
+  a.card { display:block; text-decoration:none; color:#fff; padding:20px 24px; margin-bottom:16px; border-radius:22px;
+           background:rgba(255,255,255,.06); border:2px solid transparent;
+           background-image:linear-gradient(rgba(30,18,52,.98),rgba(30,18,52,.98)), linear-gradient(120deg,#ff5fa8,#b57bff,#ffb28a);
+           background-origin:border-box; background-clip:padding-box,border-box;
+           box-shadow:0 0 24px rgba(255,95,168,.25); transition:transform .15s; }
+  a.card:hover { transform:translateY(-2px); }
+  a.card b { display:block; font-size:22px; margin-bottom:4px; }
+  a.card span { color:rgba(255,255,255,.6); font-size:15px; }
+  a.card code { color:#ffb28a; background:rgba(255,255,255,.08); padding:2px 8px; border-radius:8px; }
+  p.dica { text-align:center; color:rgba(255,255,255,.45); font-size:14px; margin-top:24px; line-height:1.6; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Molduras da Bombombia</h1>
+  <p class="sub">molduras animadas pro OBS · fonte "Navegador"</p>
+
+  <a class="card" href="moldura-camera.html">
+    <b>💖 Moldura da câmera</b>
+    <span>só o anel da câmera, com lacinho, corações e o nome · no OBS: <code>1200 × 780</code></span>
+  </a>
+  <a class="card" href="moldura-live.html">
+    <b>✨ Moldura da tela inteira</b>
+    <span>borda em volta da tela + câmera + "AO VIVO" + redes · no OBS: <code>1920 × 1080</code></span>
+  </a>
+
+  <p class="dica">No OBS: Fontes → + → Navegador → cole o link da moldura e use o tamanho indicado.<br>
+  Deixe a moldura acima da câmera na lista de fontes. Aqui no navegador aparece um fundo de exemplo; no OBS fica transparente.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Moldura de Live</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<!--
+  ================================================================
+   MOLDURA ANIMADA PARA OBS  -  fonte "Navegador", 1920 x 1080
+  ================================================================
+   COMO COLOCAR NO OBS
+     1. Fontes -> + -> Navegador -> marque "Arquivo local"
+     2. Escolha este arquivo. Largura 1920, Altura 1080.
+     3. Na lista de fontes, deixe a moldura ACIMA da camera/jogo.
+     4. Arraste a camera no OBS ate encaixar dentro da molduzinha.
+
+   COMO PERSONALIZAR
+     Mexa so no bloco CONFIG logo abaixo (nome, cores, posicao da
+     camera, chat...). Salvou? No OBS: botao direito na fonte ->
+     "Atualizar".
+
+   Abrindo no navegador normal, aparece um fundo escuro de exemplo
+   so pra voce visualizar. Dentro do OBS ele fica transparente
+   automaticamente.
+  ================================================================
+-->
+<script>
+const CONFIG = {
+  nome: "Bombombia",                                        // nome na etiqueta da câmera
+  redes: ["@bombombia · instagram", "@bombombia · tiktok"], // frases que alternam no rodapé ([] = esconde)
+
+  cores: {
+    rosa:    "#ff5fa8",
+    lilas:   "#b57bff",
+    pessego: "#ffb28a",
+    claro:   "#ffd6ea",
+  },
+
+  moldura: { margem: 20, borda: 8, raio: 40 },   // moldura da tela inteira
+
+  // moldura da câmera: posição (x, y) e tamanho, em pixels numa tela 1920x1080
+  cam:    { x: 1390, y: 740, largura: 480, altura: 270, borda: 6, raio: 26 },
+
+  // caixa opcional pra chat / alertas / qualquer coisa (ative com ativo: true)
+  painel: { ativo: false, titulo: "chat", x: 1420, y: 60, largura: 440, altura: 620, borda: 6, raio: 26 },
+
+  coracoes: 16,                // corações subindo
+  brilhos: 46,                 // brilhinhos piscando
+  particulasNaTelaToda: false, // false = só nas bordas (não atrapalha o jogo) · true = tela toda
+  laco: true,                  // lacinho no topo
+  aoVivo: true,                // selo "AO VIVO"
+
+  fundoDemo: "auto",           // "auto" = fundo de exemplo só fora do OBS · true / false força
+};
+</script>
+
+<style>
+  :root { --rosa:#ff5fa8; --lilas:#b57bff; --pessego:#ffb28a; --claro:#ffd6ea; --rosa-glow:rgba(255,95,168,.55); }
+  * { box-sizing:border-box; }
+  html, body {
+    margin:0; padding:0; width:100%; height:100%; overflow:hidden;
+    background:transparent;
+    font-family:'Quicksand','Segoe UI',Arial,sans-serif;
+  }
+  body.demo { background:radial-gradient(ellipse at 50% 35%, #2d1b4e 0%, #180d2e 55%, #0d0718 100%); }
+  .demo-only { display:none; }
+  body.demo .demo-only { display:flex; align-items:center; justify-content:center; }
+
+  .palco { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 0; }
+  .tela.demo-only { position:absolute; inset:0; z-index:0; color:rgba(255,255,255,.22); font-size:34px; font-weight:700; letter-spacing:1px; }
+
+  /* ---------- partículas ---------- */
+  .particulas { position:absolute; inset:0; overflow:hidden; z-index:1; pointer-events:none; }
+  .coracao { position:absolute; bottom:-70px; width:var(--tam); height:var(--tam); animation:subir linear infinite; }
+  .coracao i { display:block; width:100%; height:100%; animation:balancar ease-in-out infinite alternate; }
+  .coracao svg { display:block; width:100%; height:100%; fill:var(--cor); filter:drop-shadow(0 0 6px var(--cor)); opacity:.9; }
+  .brilhinho { position:absolute; width:var(--tam); height:var(--tam); margin:calc(var(--tam) / -2) 0 0 calc(var(--tam) / -2); animation:piscar ease-in-out infinite; }
+  .brilhinho svg { display:block; width:100%; height:100%; fill:#fff; filter:drop-shadow(0 0 5px var(--cor)); }
+
+  /* ---------- quadros (moldura da tela, câmera, painel) ---------- */
+  .quadro { position:absolute; z-index:2; pointer-events:none; }
+  .quadro .anel { position:absolute; left:0; top:0; display:block; overflow:visible; }
+  .quadro .brilho { position:absolute; inset:0; border-radius:var(--raio); }
+  .quadro .canto {
+    position:absolute; width:36px; height:36px; fill:var(--rosa); stroke:#fff; stroke-width:1.5px;
+    filter:drop-shadow(0 0 6px var(--rosa)); animation:pulsar 2.2s ease-in-out infinite;
+  }
+  .quadro .tag {
+    position:absolute; left:22px; bottom:-22px; z-index:1;
+    display:inline-flex; align-items:center; gap:10px;
+    padding:6px 24px 8px 18px; border-radius:999px;
+    background:linear-gradient(95deg, var(--rosa), var(--lilas));
+    color:#fff; font-family:'Pacifico','Segoe Script',cursive; font-size:30px; line-height:1.25;
+    text-shadow:0 2px 6px rgba(0,0,0,.25); white-space:nowrap; overflow:hidden;
+    box-shadow:0 8px 22px rgba(0,0,0,.28), 0 0 18px var(--rosa-glow), inset 0 1px 0 rgba(255,255,255,.55);
+  }
+  .quadro .tag svg { width:24px; height:24px; fill:#fff; flex:none; animation:pulsar 1.6s ease-in-out infinite; }
+  .quadro .tag::after {                 /* reflexo passando pela etiqueta */
+    content:""; position:absolute; top:0; bottom:0; left:-40%; width:40%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.6), transparent);
+    transform:skewX(-20deg); animation:reflexo 4.5s ease-in-out infinite;
+  }
+  .quadro.painel .tag { font-family:'Quicksand',sans-serif; font-weight:700; font-size:22px; letter-spacing:.5px; }
+  .quadro .dentro {
+    position:absolute; inset:12px; border-radius:calc(var(--raio) - 10px);
+    border:2px dashed rgba(255,255,255,.28); background:rgba(255,255,255,.06);
+    color:rgba(255,255,255,.45); font-size:26px; font-weight:700;
+  }
+  .laco {
+    position:absolute; left:calc(50% - 90px); top:-30px; width:180px; height:101px;
+    transform-origin:50% 45%; animation:balancinho 4s ease-in-out infinite;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,.28));
+  }
+
+  /* ---------- selos ---------- */
+  .ao-vivo {
+    position:absolute; left:60px; top:54px; z-index:3;
+    display:inline-flex; align-items:center; gap:10px;
+    padding:8px 20px 8px 14px; border-radius:999px;
+    background:linear-gradient(95deg, var(--rosa), var(--lilas));
+    color:#fff; font-weight:700; font-size:20px; letter-spacing:2px;
+    box-shadow:0 6px 18px rgba(0,0,0,.28), 0 0 16px var(--rosa-glow), inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  .ao-vivo i { width:12px; height:12px; border-radius:50%; background:#fff; animation:ping 1.4s ease-out infinite; }
+  .redes {
+    position:absolute; left:50%; bottom:48px; transform:translateX(-50%); z-index:3;
+    display:inline-flex; align-items:center; gap:10px;
+    padding:9px 26px 9px 20px; border-radius:999px;
+    background:rgba(255,255,255,.95); color:var(--rosa); font-weight:700; font-size:20px;
+    box-shadow:0 6px 18px rgba(0,0,0,.22), 0 0 16px var(--rosa-glow);
+  }
+  .redes svg { width:20px; height:20px; fill:var(--rosa); flex:none; animation:pulsar 1.6s ease-in-out infinite; }
+  .redes span { display:inline-block; transition:opacity .45s ease, transform .45s ease; }
+  .redes span.sair { opacity:0; transform:translateY(8px); }
+
+  /* ---------- animações ---------- */
+  @keyframes subir      { 0% { transform:translateY(0); opacity:0 } 8% { opacity:1 } 85% { opacity:1 } 100% { transform:translateY(-1250px); opacity:0 } }
+  @keyframes balancar   { from { transform:translateX(-16px) rotate(-14deg) } to { transform:translateX(16px) rotate(14deg) } }
+  @keyframes piscar     { 0%,100% { transform:scale(0) rotate(0deg); opacity:0 } 50% { transform:scale(1) rotate(90deg); opacity:1 } }
+  @keyframes pulsar     { 0%,100% { transform:rotate(var(--rot,0deg)) scale(1) } 50% { transform:rotate(var(--rot,0deg)) scale(1.18) } }
+  @keyframes reflexo    { 0% { transform:translateX(0) skewX(-20deg) } 45%,100% { transform:translateX(450%) skewX(-20deg) } }
+  @keyframes balancinho { 0%,100% { transform:rotate(-4deg) } 50% { transform:rotate(4deg) } }
+  @keyframes ping       { 0% { box-shadow:0 0 0 0 rgba(255,255,255,.8) } 100% { box-shadow:0 0 0 10px rgba(255,255,255,0) } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-coracao" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></symbol>
+  <symbol id="ic-brilho" viewBox="0 0 24 24"><path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12 6.4-.6 11.4-5.6 12-12z"/></symbol>
+</svg>
+
+<template id="laco-modelo">
+  <svg class="laco" viewBox="0 0 160 90">
+    <defs>
+      <linearGradient id="gLaco" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--rosa)"/><stop offset="1" style="stop-color:var(--lilas)"/></linearGradient>
+      <linearGradient id="gLaco2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--lilas)"/><stop offset="1" style="stop-color:var(--rosa)"/></linearGradient>
+    </defs>
+    <path d="M74 50 C66 62 58 76 42 86 L62 84 C68 74 74 64 78 54 Z" fill="url(#gLaco2)" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/>
+    <path d="M86 50 C94 62 102 76 118 86 L98 84 C92 74 86 64 82 54 Z" fill="url(#gLaco2)" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/>
+    <path d="M80 42 C60 8 10 10 12 36 C14 60 58 64 80 42 Z" fill="url(#gLaco)" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>
+    <path d="M80 42 C100 8 150 10 148 36 C146 60 102 64 80 42 Z" fill="url(#gLaco)" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>
+    <path d="M76 42 C62 24 28 24 28 37 C28 50 62 52 76 42 Z" fill="#fff" opacity=".22"/>
+    <path d="M84 42 C98 24 132 24 132 37 C132 50 98 52 84 42 Z" fill="#fff" opacity=".22"/>
+    <ellipse cx="80" cy="42" rx="12" ry="10" style="fill:var(--claro);stroke:var(--rosa)" stroke-width="2"/>
+    <ellipse cx="77" cy="38" rx="4" ry="2.5" fill="#fff" opacity=".85"/>
+  </svg>
+</template>
+
+<div class="palco">
+  <div class="demo-only tela">aqui aparece o seu jogo / a sua tela</div>
+  <div class="particulas"></div>
+  <!-- as molduras são montadas pelo script, a partir do CONFIG -->
+  <div class="ao-vivo"><i></i>AO VIVO</div>
+  <div class="redes"><svg viewBox="0 0 24 24"><use href="#ic-coracao"/></svg><span></span></div>
+</div>
+
+<script>
+(function () {
+  const C = CONFIG;
+  const palco = document.querySelector('.palco');
+  const root = document.documentElement.style;
+
+  const hex = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+  const rgba = (h, a) => 'rgba(' + hex(h).join(',') + ',' + a + ')';
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const escolhe = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  root.setProperty('--rosa', C.cores.rosa);
+  root.setProperty('--lilas', C.cores.lilas);
+  root.setProperty('--pessego', C.cores.pessego);
+  root.setProperty('--claro', C.cores.claro);
+  root.setProperty('--rosa-glow', rgba(C.cores.rosa, .55));
+
+  // fundo de exemplo: só fora do OBS (o OBS injeta window.obsstudio na página)
+  let demo = C.fundoDemo === true || (C.fundoDemo === 'auto' && !window.obsstudio);
+  if (/preview/.test(location.search)) demo = true;
+  if (/semfundo/.test(location.search)) demo = false;
+  if (demo) document.body.classList.add('demo');
+
+  // encaixa o palco 1920x1080 no tamanho da janela / da fonte no OBS
+  function ajustar() {
+    const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    palco.style.transform = 'translate(' + (innerWidth - 1920 * s) / 2 + 'px,' + (innerHeight - 1080 * s) / 2 + 'px) scale(' + s + ')';
+  }
+  addEventListener('resize', ajustar); ajustar();
+
+  // anel SVG com gradiente girando + filete branco por dentro
+  let uid = 0;
+  function anel(l, a, b, r, dur, inverso) {
+    const id = 'grad' + (++uid), m = b / 2, i = b + 4;
+    return '<svg class="anel" width="' + l + '" height="' + a + '" viewBox="0 0 ' + l + ' ' + a + '">' +
+      '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="' + C.cores.rosa + '"/>' +
+        '<stop offset=".45" stop-color="' + C.cores.lilas + '"/>' +
+        '<stop offset="1" stop-color="' + C.cores.pessego + '"/>' +
+        '<animateTransform attributeName="gradientTransform" type="rotate" from="' + (inverso ? 360 : 0) + ' .5 .5" to="' + (inverso ? 0 : 360) + ' .5 .5" dur="' + dur + 's" repeatCount="indefinite"/>' +
+      '</linearGradient></defs>' +
+      '<rect x="' + m + '" y="' + m + '" width="' + (l - b) + '" height="' + (a - b) + '" rx="' + r + '" fill="none" stroke="url(#' + id + ')" stroke-width="' + b + '"/>' +
+      '<rect x="' + i + '" y="' + i + '" width="' + (l - 2 * i) + '" height="' + (a - 2 * i) + '" rx="' + Math.max(r - i + m, 4) + '" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.5"/>' +
+    '</svg>';
+  }
+
+  const coracaoSVG = (classe, estilo) => '<svg class="' + classe + '" style="' + estilo + '" viewBox="0 0 24 24"><use href="#ic-coracao"/></svg>';
+
+  function quadro(q, classe, o) {
+    o = o || {};
+    const el = document.createElement('div');
+    el.className = 'quadro ' + classe;
+    el.style.cssText = 'left:' + q.x + 'px;top:' + q.y + 'px;width:' + q.largura + 'px;height:' + q.altura + 'px;--raio:' + q.raio + 'px;';
+    el.innerHTML =
+      anel(q.largura, q.altura, q.borda, q.raio, o.dur || 8, o.inverso) +
+      '<div class="brilho" style="box-shadow:0 0 ' + (o.brilho || 26) + 'px 2px ' + rgba(C.cores.rosa, .5) + ', inset 0 0 ' + (o.brilhoDentro || 40) + 'px ' + rgba(C.cores.rosa, .2) + '"></div>' +
+      (o.cantos || '') +
+      (o.tag ? '<div class="tag">' + coracaoSVG('', '') + '<span></span></div>' : '') +
+      (o.demo ? '<div class="demo-only dentro"></div>' : '');
+    if (o.tag) el.querySelector('.tag span').textContent = o.tag;
+    if (o.demo) el.querySelector('.dentro').textContent = o.demo;
+    palco.insertBefore(el, document.querySelector('.ao-vivo'));
+    return el;
+  }
+
+  // moldura da tela inteira: 4 coraçõezinhos nos cantos + lacinho
+  const M = C.moldura;
+  const cantos = [
+    ['left:-6px;top:-6px', '-20deg'], ['right:-6px;top:-6px', '20deg'],
+    ['left:-6px;bottom:-6px', '20deg'], ['right:-6px;bottom:-6px', '-20deg'],
+  ].map(p => coracaoSVG('canto', p[0] + ';--rot:' + p[1])).join('');
+  const laco = C.laco ? document.getElementById('laco-modelo').innerHTML : '';
+  quadro({ x: M.margem, y: M.margem, largura: 1920 - 2 * M.margem, altura: 1080 - 2 * M.margem, borda: M.borda, raio: M.raio },
+         'tela', { dur: 12, brilho: 34, brilhoDentro: 90, cantos: cantos + laco });
+
+  // câmera e painel opcional
+  const cantinho = coracaoSVG('canto', 'right:-10px;top:-10px;--rot:20deg');
+  quadro(C.cam, 'cam', { dur: 7, inverso: true, tag: C.nome, demo: 'câmera', cantos: cantinho });
+  if (C.painel && C.painel.ativo) quadro(C.painel, 'painel', { dur: 9, tag: C.painel.titulo, demo: C.painel.titulo, cantos: cantinho });
+
+  // partículas
+  const P = document.querySelector('.particulas');
+  const cores = [C.cores.rosa, C.cores.lilas, C.cores.pessego, C.cores.claro, '#ffffff'];
+  const toda = C.particulasNaTelaToda;
+
+  for (let k = 0; k < C.coracoes; k++) {
+    const d = document.createElement('div');
+    d.className = 'coracao';
+    const x = toda ? rnd(30, 1890) : (Math.random() < .5 ? rnd(30, 190) : rnd(1730, 1890));
+    const dur = rnd(9, 17);
+    d.style.cssText = 'left:' + x + 'px;--tam:' + rnd(18, 46) + 'px;--cor:' + escolhe(cores) +
+      ';animation-duration:' + dur + 's;animation-delay:-' + rnd(0, dur) + 's';
+    d.innerHTML = '<i style="animation-duration:' + rnd(1.6, 3.4) + 's"><svg viewBox="0 0 24 24"><use href="#ic-coracao"/></svg></i>';
+    P.appendChild(d);
+  }
+
+  function posBrilho() {
+    if (toda) return [rnd(20, 1900), rnd(20, 1060)];
+    const lado = Math.floor(rnd(0, 4));
+    if (lado === 0) return [rnd(20, 1900), rnd(6, 110)];      // topo
+    if (lado === 1) return [rnd(20, 1900), rnd(970, 1074)];   // base
+    if (lado === 2) return [rnd(6, 110), rnd(20, 1060)];      // esquerda
+    return [rnd(1810, 1914), rnd(20, 1060)];                  // direita
+  }
+  function posBrilhoCam() {                                   // em volta da câmera
+    const q = C.cam, lado = Math.floor(rnd(0, 4)), j = 22;
+    if (lado === 0) return [rnd(q.x, q.x + q.largura), q.y + rnd(-j, j)];
+    if (lado === 1) return [rnd(q.x, q.x + q.largura), q.y + q.altura + rnd(-j, j)];
+    if (lado === 2) return [q.x + rnd(-j, j), rnd(q.y, q.y + q.altura)];
+    return [q.x + q.largura + rnd(-j, j), rnd(q.y, q.y + q.altura)];
+  }
+  for (let k = 0; k < C.brilhos; k++) {
+    const d = document.createElement('div');
+    d.className = 'brilhinho';
+    const p = k % 4 === 3 ? posBrilhoCam() : posBrilho();
+    const dur = rnd(1.8, 4);
+    d.style.cssText = 'left:' + p[0] + 'px;top:' + p[1] + 'px;--tam:' + rnd(10, 26) + 'px;--cor:' + escolhe(cores) +
+      ';animation-duration:' + dur + 's;animation-delay:-' + rnd(0, dur) + 's';
+    d.innerHTML = '<svg viewBox="0 0 24 24"><use href="#ic-brilho"/></svg>';
+    P.appendChild(d);
+  }
+
+  // selos
+  if (!C.aoVivo) document.querySelector('.ao-vivo').remove();
+  const redes = document.querySelector('.redes'), txt = redes.querySelector('span');
+  if (!C.redes || !C.redes.length) redes.remove();
+  else {
+    let i = 0; txt.textContent = C.redes[0];
+    if (C.redes.length > 1) setInterval(() => {
+      txt.classList.add('sair');
+      setTimeout(() => { i = (i + 1) % C.redes.length; txt.textContent = C.redes[i]; txt.classList.remove('sair'); }, 450);
+    }, 6000);
+  }
+})();
+</script>
+</body>
+</html>
