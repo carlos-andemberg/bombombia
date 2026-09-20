@@ -28,24 +28,26 @@ Na fonte Navegador do OBS, marque **Atualizar o navegador quando a cena ficar at
 
 ## Tela de "volto já"
 
-`volto-ja.html` mostra a splash art oficial da Seraphine (vinda do Data Dragon, o CDN da Riot) com um cronômetro de quanto tempo você está fora. A skin padrão é a **Hino ao Amor** (69); pra trocar, edite `CONFIG.skin` ou use o link: `volto-ja.html?skin=24`. Pra usar uma imagem sua, coloque o link dela em `CONFIG.imagem`.
+`volto-ja.html` mostra a splash art oficial da Seraphine (vinda do Data Dragon, o CDN da Riot) com um cronômetro de quanto tempo você está fora. A skin padrão é a **Hino ao Amor** (14); pra trocar, edite `CONFIG.skin` ou use o link: `volto-ja.html?skin=8`. Pra usar uma imagem sua, coloque o link dela em `CONFIG.imagem`.
 
-Skins da Seraphine, da mais antiga pra mais nova (o número pula porque os chromas ocupam os do meio):
+Skins da Seraphine, da mais antiga pra mais nova:
 
 | nº | Skin |
 |---|---|
-| 0 | Clássica |
-| 1 / 2 / 3 | K/DA ALL OUT (Indie / Rumo ao Estrelato / Superstar) |
-| 4 | Fênix Graciosa |
-| 14 | Canção do Oceano |
-| 15 | Canção do Oceano de Prestígio |
-| 24 | Corte das Fadas |
-| 34 | Guardiã Estelar |
-| 43 | Ave de Batalha |
-| 50 | Meili Café |
-| 59 | Fogos de Artifício |
-| 68 | T1 |
-| 69 | Hino ao Amor (padrão) |
+| 1 | Clássica |
+| 2 | K/DA ALL OUT – Indie |
+| 3 | K/DA ALL OUT – Rumo ao Estrelato |
+| 4 | K/DA ALL OUT – Superstar |
+| 5 | Fênix Graciosa |
+| 6 | Canção do Oceano |
+| 7 | Canção do Oceano de Prestígio |
+| 8 | Corte das Fadas |
+| 9 | Guardiã Estelar |
+| 10 | Ave de Batalha |
+| 11 | Meili Café |
+| 12 | Fogos de Artifício |
+| 13 | T1 |
+| 14 | Hino ao Amor (padrão) |
 
 Aqui também vale marcar **Atualizar o navegador quando a cena ficar ativa** no OBS, pra o cronômetro recomeçar do zero.
 

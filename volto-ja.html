@@ -16,23 +16,22 @@
 
    A ARTE
      A splash art vem do Data Dragon (CDN oficial da Riot).
-     Numero da skin em CONFIG.skin, ou pelo link: volto-ja.html?skin=24
-     Skins da Seraphine, da mais antiga pra mais nova (o numero pula
-     porque os chromas ocupam os do meio):
-        0  Classica
-        1  K/DA ALL OUT - Indie
-        2  K/DA ALL OUT - Rumo ao Estrelato
-        3  K/DA ALL OUT - Superstar
-        4  Fenix Graciosa
-       14  Cancao do Oceano
-       15  Cancao do Oceano de Prestigio
-       24  Corte das Fadas
-       34  Guardia Estelar
-       43  Ave de Batalha
-       50  Meili Cafe
-       59  Fogos de Artificio
-       68  T1
-       69  Hino ao Amor   <- padrao
+     Escolha a skin pelo numero da lista (1 a 14), em CONFIG.skin
+     ou pelo link: volto-ja.html?skin=8
+        1  Classica
+        2  K/DA ALL OUT - Indie
+        3  K/DA ALL OUT - Rumo ao Estrelato
+        4  K/DA ALL OUT - Superstar
+        5  Fenix Graciosa
+        6  Cancao do Oceano
+        7  Cancao do Oceano de Prestigio
+        8  Corte das Fadas
+        9  Guardia Estelar
+       10  Ave de Batalha
+       11  Meili Cafe
+       12  Fogos de Artificio
+       13  T1
+       14  Hino ao Amor   <- padrao
      Quer usar uma imagem sua? Coloque o link dela em CONFIG.imagem.
   ================================================================
 -->
@@ -44,7 +43,7 @@ const CONFIG = {
   frase: "não sai daí que já já eu volto 💖",    // frase embaixo do título
   cronometro: true,                             // mostra há quanto tempo saiu
 
-  skin: 69,                                     // Seraphine Hino ao Amor (veja a lista lá em cima)
+  skin: 14,                                     // número da lista lá em cima (1 a 14) · 14 = Hino ao Amor
   imagem: "",                                   // link de outra imagem (se preencher, ignora a skin)
   foco: "60% 30%",                              // qual parte da arte fica em destaque (x% y%)
   deslocar: 340,                                // empurra a arte pra direita (px), pra sobrar espaço pro texto
@@ -202,10 +201,12 @@ const CONFIG = {
   }
   addEventListener('resize', ajustar); ajustar();
 
-  // a arte: imagem própria, ou a splash da skin (?skin=24 no link troca)
-  const skin = params.get('skin') !== null ? parseInt(params.get('skin'), 10) : C.skin;
+  // a arte: imagem própria, ou a splash da skin (?skin=8 no link troca)
+  const SKINS = [0, 1, 2, 3, 4, 14, 15, 24, 34, 43, 50, 59, 68, 69];   // lista 1..14 -> número que a Riot usa
+  const pedida = parseInt(params.get('skin'), 10);
+  const n = pedida >= 1 && pedida <= SKINS.length ? pedida : C.skin;
   const img = document.querySelector('.arte img');
-  img.src = C.imagem || 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Seraphine_' + skin + '.jpg';
+  img.src = C.imagem || 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Seraphine_' + (SKINS[n - 1] ?? 69) + '.jpg';
   img.style.setProperty('--foco', C.foco);
   document.querySelector('.arte').style.setProperty('--arte-x', C.deslocar + 'px');
 
