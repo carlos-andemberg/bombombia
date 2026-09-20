@@ -19,8 +19,26 @@
      arquivo, use o link com ?min=   ->   inicio.html?min=5
 
    VISUAL
-     Tema Seraphine "Rosa de Cristal": cristais, petalas, notinhas
-     musicais e brilhos. Mexa so no bloco CONFIG pra personalizar.
+     Cristais, petalas, notinhas musicais e brilhos, com a splash art
+     da Seraphine do lado direito (vem do Data Dragon, CDN da Riot).
+     Escolha a skin pelo numero da lista (1 a 14), em CONFIG.skin
+     ou pelo link: inicio.html?skin=8   (junta com o tempo: ?min=5&skin=8)
+        1  Classica
+        2  K/DA ALL OUT - Indie
+        3  K/DA ALL OUT - Rumo ao Estrelato
+        4  K/DA ALL OUT - Superstar
+        5  Fenix Graciosa
+        6  Cancao do Oceano
+        7  Cancao do Oceano de Prestigio
+        8  Corte das Fadas
+        9  Guardia Estelar
+       10  Ave de Batalha
+       11  Meili Cafe
+       12  Fogos de Artificio
+       13  T1
+       14  Hino ao Amor   <- padrao
+     Quer usar uma imagem sua? Coloque o link dela em CONFIG.imagem.
+     Nao quer imagem? CONFIG.arte = false (o cartao volta pro meio).
   ================================================================
 -->
 <script>
@@ -31,6 +49,13 @@ const CONFIG = {
   rotuloFinal: "começando! 💖",              // quando chega em 00:00
   campea: "Seraphine · Rosa de Cristal",     // linha embaixo do nome
   rodape: "pega uma aguinha e já volto 💖",   // frase lá embaixo ("" = esconde)
+
+  arte: true,                                // Seraphine do lado direito (false = só o cartão, no meio)
+  skin: 14,                                  // número da lista lá em cima (1 a 14) · 14 = Hino ao Amor
+  imagem: "",                                // link de outra imagem (se preencher, ignora a skin)
+  foco: "60% 30%",                           // qual parte da arte fica em destaque (x% y%)
+  deslocar: 340,                             // empurra a arte pra direita (px), pra sobrar espaço pro cartão
+  credito: "arte: Riot Games",               // textinho no canto ("" = esconde)
 
   redes: [
     { rede: "twitch",    texto: "twitch.tv/bombombia" },
@@ -66,6 +91,21 @@ const CONFIG = {
       radial-gradient(ellipse at 50% 55%, rgba(255,179,214,.14), transparent 60%),
       linear-gradient(160deg, var(--fundo1) 0%, var(--fundo2) 50%, var(--fundo3) 100%); }
   .bokeh, .particulas { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+
+  /* ---------- a arte (só quando CONFIG.arte = true) ---------- */
+  .arte { position:absolute; top:0; bottom:0; left:var(--arte-x); right:-160px; overflow:hidden; -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 30%); mask-image:linear-gradient(90deg, transparent 0, #000 30%); }
+  .arte img { width:100%; height:100%; object-fit:cover; object-position:var(--foco); transform-origin:var(--foco); animation:respirar 40s ease-in-out infinite alternate; }
+  .veu { position:absolute; inset:0;
+    background:
+      linear-gradient(90deg, rgba(59,10,47,.97) 0%, rgba(59,10,47,.92) 22%, rgba(59,10,47,.55) 45%, rgba(59,10,47,.10) 68%, rgba(59,10,47,0) 100%),
+      linear-gradient(0deg, rgba(30,5,30,.75) 0%, rgba(30,5,30,0) 30%),
+      linear-gradient(180deg, rgba(30,5,30,.45) 0%, rgba(30,5,30,0) 22%); }
+  .arte, .veu, .credito { display:none; }
+  body.com-arte .arte, body.com-arte .veu { display:block; }
+  body.com-arte .credito { display:block; position:absolute; right:52px; bottom:44px; z-index:3; font-size:15px; font-weight:700; letter-spacing:.5px; color:rgba(255,255,255,.45); }
+  body.com-arte .centro { justify-content:flex-start; padding-left:150px; }
+  body.com-arte .cartao { width:780px; padding:34px 44px 40px; }
+  body.com-arte .rodape { left:150px; right:auto; width:780px; }
   .bokeh span { position:absolute; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.28), rgba(255,255,255,0) 70%); animation:flutuar var(--dur) ease-in-out var(--delay) infinite alternate; }
 
   /* ---------- partículas ---------- */
@@ -115,6 +155,7 @@ const CONFIG = {
   body.fim .rotulo { animation:pulsar 1.2s ease-in-out infinite; }
 
   /* ---------- animações ---------- */
+  @keyframes respirar   { from { transform:scale(1) } to { transform:scale(1.07) } }
   @keyframes flutuar    { from { transform:translateY(-16px) rotate(-7deg) } to { transform:translateY(16px) rotate(7deg) } }
   @keyframes cair       { 0% { transform:translate(0,0); opacity:0 } 8% { opacity:.95 } 90% { opacity:.95 } 100% { transform:translate(var(--desvio), 1220px); opacity:0 } }
   @keyframes girar      { from { transform:rotate(-45deg) } to { transform:rotate(45deg) } }
@@ -170,6 +211,8 @@ const CONFIG = {
 
 <div class="palco">
   <div class="fundo"></div>
+  <div class="arte"><img alt=""></div>
+  <div class="veu"></div>
   <div class="bokeh"></div>
   <div class="particulas"></div>
   <div class="moldura"></div>
@@ -190,6 +233,7 @@ const CONFIG = {
     </div>
   </div>
   <div class="rodape"></div>
+  <div class="credito"></div>
 </div>
 
 <script>
@@ -207,6 +251,20 @@ const CONFIG = {
     palco.style.transform = 'translate(' + (innerWidth - W * s) / 2 + 'px,' + (innerHeight - H * s) / 2 + 'px) scale(' + s + ')';
   }
   addEventListener('resize', ajustar); ajustar();
+  const params = new URLSearchParams(location.search);
+
+  // a arte: imagem própria, ou a splash da skin (?skin=8 no link troca)
+  if (C.arte) {
+    document.body.classList.add('com-arte');
+    const SKINS = [0, 1, 2, 3, 4, 14, 15, 24, 34, 43, 50, 59, 68, 69];   // lista 1..14 -> número que a Riot usa
+    const pedida = parseInt(params.get('skin'), 10);
+    const n = pedida >= 1 && pedida <= SKINS.length ? pedida : C.skin;
+    const img = document.querySelector('.arte img');
+    img.src = C.imagem || 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Seraphine_' + (SKINS[n - 1] ?? 69) + '.jpg';
+    img.style.setProperty('--foco', C.foco);
+    document.querySelector('.arte').style.setProperty('--arte-x', C.deslocar + 'px');
+    document.querySelector('.credito').textContent = C.credito || '';
+  }
 
   // textos
   document.querySelector('.rotulo span').textContent = C.rotulo;
@@ -249,7 +307,9 @@ const CONFIG = {
   // partículas
   const P = document.querySelector('.particulas');
   const cores = [C.cores.rosa, C.cores.rosaClaro, C.cores.lilas, C.cores.pessego, '#ffffff'];
-  const lateral = () => Math.random() < .5 ? rnd(60, 380) : rnd(1540, 1860);   // fora do cartão
+  const lateral = C.arte                                                        // fora do cartão (e da Seraphine)
+    ? () => Math.random() < .6 ? rnd(940, 1090) : rnd(1780, 1870)
+    : () => Math.random() < .5 ? rnd(60, 380) : rnd(1540, 1860);
 
   for (let k = 0; k < C.cristais; k++) {                                        // cristais flutuando
     const d = document.createElement('div');
@@ -282,7 +342,7 @@ const CONFIG = {
   }
 
   // contagem regressiva (?min=5 no link muda a duração)
-  const pMin = parseFloat(new URLSearchParams(location.search).get('min'));
+  const pMin = parseFloat(params.get('min'));
   const minutos = pMin > 0 ? pMin : C.minutos;
   const total = Math.round(minutos * 60) * 1000, fim = Date.now() + total;
   const tempo = document.querySelector('.tempo'), prog = document.querySelector('.progresso'), rotulo = document.querySelector('.rotulo span');
