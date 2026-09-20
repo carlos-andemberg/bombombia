@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Começando em breve</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Fredoka:wght@500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<!--
+  ================================================================
+   TELA DE INICIO DE LIVE  -  contagem regressiva (OBS, 1920 x 1080)
+  ================================================================
+   NO OBS
+     Fontes -> + -> Navegador -> URL desta pagina (ou "Arquivo local")
+     Largura 1920, Altura 1080.
+     Marque "Atualizar o navegador quando a cena ficar ativa":
+     assim a contagem recomeca toda vez que voce entra na cena.
+
+   TEMPO
+     Padrao: 10 minutos (CONFIG.minutos). Pra mudar sem editar o
+     arquivo, use o link com ?min=   ->   inicio.html?min=5
+
+   VISUAL
+     Tema Seraphine "Rosa de Cristal": cristais, petalas, notinhas
+     musicais e brilhos. Mexa so no bloco CONFIG pra personalizar.
+  ================================================================
+-->
+<script>
+const CONFIG = {
+  nome: "bombombia",
+  minutos: 10,                               // duração da contagem (ou use ?min=5 no link)
+  rotulo: "a live já vai começar",           // texto em cima do relógio
+  rotuloFinal: "começando! 💖",              // quando chega em 00:00
+  campea: "Seraphine · Rosa de Cristal",     // linha embaixo do nome
+  rodape: "pega uma aguinha e já volto 💖",   // frase lá embaixo ("" = esconde)
+
+  redes: [
+    { rede: "twitch",    texto: "twitch.tv/bombombia" },
+    { rede: "instagram", texto: "@_pereirabiaa" },
+    { rede: "x",         texto: "@bombombiaa" },
+    { rede: "tiktok",    texto: "@bombombia" },
+  ],
+
+  cores: {
+    rosa:      "#ff5fa8",
+    rosaClaro: "#ffb3d6",
+    lilas:     "#b57bff",
+    pessego:   "#ffb28a",
+    fundo1:    "#3b0a2f",   // gradiente do fundo (de cima pra baixo)
+    fundo2:    "#7a1758",
+    fundo3:    "#2c0b3a",
+  },
+
+  cristais: 10, petalas: 14, notas: 10, brilhos: 40,
+  laco: true,
+};
+</script>
+
+<style>
+  :root { --rosa:#ff5fa8; --rosa-claro:#ffb3d6; --lilas:#b57bff; --pessego:#ffb28a; --fundo1:#3b0a2f; --fundo2:#7a1758; --fundo3:#2c0b3a; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:var(--fundo1); color:#fff; font-family:'Quicksand','Segoe UI',Arial,sans-serif; }
+  .palco { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 0; overflow:hidden; }
+  .fundo { position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 12% 12%, rgba(255,95,168,.45), transparent 55%),
+      radial-gradient(ellipse at 88% 88%, rgba(181,123,255,.40), transparent 55%),
+      radial-gradient(ellipse at 50% 55%, rgba(255,179,214,.14), transparent 60%),
+      linear-gradient(160deg, var(--fundo1) 0%, var(--fundo2) 50%, var(--fundo3) 100%); }
+  .bokeh, .particulas { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .bokeh span { position:absolute; border-radius:50%; background:radial-gradient(circle, rgba(255,255,255,.28), rgba(255,255,255,0) 70%); animation:flutuar var(--dur) ease-in-out var(--delay) infinite alternate; }
+
+  /* ---------- partículas ---------- */
+  .cristal { position:absolute; width:var(--tam); height:calc(var(--tam) * 1.33); transform:rotate(var(--rot)); opacity:.92; filter:drop-shadow(0 0 12px rgba(255,150,200,.65)); }
+  .cristal svg { display:block; width:100%; height:100%; animation:flutuar var(--dur) ease-in-out var(--delay) infinite alternate; }
+  .petala { position:absolute; top:-70px; width:var(--tam); height:var(--tam); animation:cair var(--dur) linear var(--delay) infinite; }
+  .petala i { display:block; width:100%; height:100%; animation:girar 3s ease-in-out infinite alternate; }
+  .petala svg { display:block; width:100%; height:100%; filter:drop-shadow(0 2px 6px rgba(0,0,0,.25)); }
+  .nota { position:absolute; bottom:-80px; font-size:var(--tam); line-height:1; color:rgba(255,255,255,.8); text-shadow:0 0 14px var(--rosa); animation:subirNota var(--dur) linear var(--delay) infinite; }
+  .brilhinho { position:absolute; width:var(--tam); height:var(--tam); margin:calc(var(--tam) / -2) 0 0 calc(var(--tam) / -2); animation:piscar var(--dur) ease-in-out var(--delay) infinite; }
+  .brilhinho svg { display:block; width:100%; height:100%; fill:#fff; filter:drop-shadow(0 0 5px var(--cor)); }
+
+  /* ---------- moldura em volta da tela ---------- */
+  .moldura { position:absolute; inset:26px; z-index:2; pointer-events:none; }
+  .moldura .anel { position:absolute; left:0; top:0; display:block; overflow:visible; }
+  .moldura .canto { position:absolute; width:40px; height:40px; fill:var(--rosa); stroke:#fff; stroke-width:1.5px; filter:drop-shadow(0 0 8px var(--rosa)); animation:pulsar 2.2s ease-in-out infinite; }
+  .laco { position:absolute; left:50%; margin-left:-90px; top:-38px; width:180px; height:101px; transform-origin:50% 45%; animation:balancinho 4s ease-in-out infinite; filter:drop-shadow(0 4px 8px rgba(0,0,0,.28)); }
+
+  /* ---------- cartão central ---------- */
+  .centro { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:3; }
+  .cartao {
+    width:1080px; padding:38px 56px 42px; border-radius:52px; text-align:center;
+    background:linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.06));
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    border:2px solid rgba(255,255,255,.30);
+    box-shadow:0 30px 80px rgba(0,0,0,.35), 0 0 70px rgba(255,95,168,.28), inset 0 1px 0 rgba(255,255,255,.4);
+    animation:boiar 4.5s ease-in-out infinite alternate;
+  }
+  .rotulo { display:inline-flex; align-items:center; gap:10px; padding:9px 22px 9px 16px; border-radius:999px; background:linear-gradient(95deg, var(--rosa), var(--lilas)); font-weight:700; font-size:18px; letter-spacing:2.5px; text-transform:uppercase; box-shadow:0 6px 18px rgba(0,0,0,.25), 0 0 16px rgba(255,95,168,.5), inset 0 1px 0 rgba(255,255,255,.5); }
+  .rotulo i { width:12px; height:12px; border-radius:50%; background:#fff; animation:ping 1.4s ease-out infinite; }
+  .relogio { position:relative; width:360px; height:360px; margin:24px auto 8px; }
+  .anel-tempo { position:absolute; inset:0; transform:rotate(-90deg); overflow:visible; }
+  .trilho { fill:none; stroke:rgba(255,255,255,.14); stroke-width:14; }
+  .progresso { fill:none; stroke:url(#gTempo); stroke-width:14; stroke-linecap:round; transition:stroke-dashoffset 1s linear; filter:drop-shadow(0 0 8px rgba(255,95,168,.8)); }
+  .tempo { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Fredoka','Quicksand',sans-serif; font-weight:600; font-size:112px; letter-spacing:2px; font-variant-numeric:tabular-nums; text-shadow:0 0 26px rgba(255,95,168,.75), 0 4px 10px rgba(0,0,0,.3); }
+  .nome { font-family:'Pacifico','Segoe Script',cursive; font-size:78px; line-height:1.25; background:linear-gradient(95deg, #fff 0%, var(--rosa-claro) 45%, var(--rosa) 100%); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 4px 14px rgba(255,95,168,.55)); }
+  .campea { font-size:24px; font-weight:700; letter-spacing:1px; color:rgba(255,255,255,.88); }
+  .campea b { color:var(--rosa-claro); margin:0 10px; }
+  .redes { display:flex; justify-content:center; flex-wrap:wrap; gap:14px; margin-top:26px; }
+  .rede { display:inline-flex; align-items:center; gap:9px; padding:6px 18px 6px 7px; border-radius:999px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); font-weight:700; font-size:19px; box-shadow:0 4px 14px rgba(0,0,0,.18); }
+  .rede i { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--rosa), var(--lilas)); box-shadow:0 0 10px rgba(255,95,168,.5); }
+  .rede svg { width:18px; height:18px; fill:#fff; }
+  .rodape { position:absolute; left:0; right:0; bottom:58px; z-index:3; text-align:center; font-size:26px; font-weight:700; color:rgba(255,255,255,.85); text-shadow:0 2px 12px rgba(0,0,0,.35); }
+
+  /* quando chega em 00:00 */
+  body.fim .tempo { animation:pulsar 1s ease-in-out infinite; }
+  body.fim .rotulo { animation:pulsar 1.2s ease-in-out infinite; }
+
+  /* ---------- animações ---------- */
+  @keyframes flutuar    { from { transform:translateY(-16px) rotate(-7deg) } to { transform:translateY(16px) rotate(7deg) } }
+  @keyframes cair       { 0% { transform:translate(0,0); opacity:0 } 8% { opacity:.95 } 90% { opacity:.95 } 100% { transform:translate(var(--desvio), 1220px); opacity:0 } }
+  @keyframes girar      { from { transform:rotate(-45deg) } to { transform:rotate(45deg) } }
+  @keyframes subirNota  { 0% { transform:translateY(0) rotate(-10deg); opacity:0 } 10% { opacity:.85 } 85% { opacity:.85 } 100% { transform:translateY(-1000px) rotate(10deg); opacity:0 } }
+  @keyframes piscar     { 0%,100% { transform:scale(0) rotate(0deg); opacity:0 } 50% { transform:scale(1) rotate(90deg); opacity:1 } }
+  @keyframes pulsar     { 0%,100% { transform:rotate(var(--rot,0deg)) scale(1) } 50% { transform:rotate(var(--rot,0deg)) scale(1.12) } }
+  @keyframes boiar      { from { transform:translateY(-7px) } to { transform:translateY(7px) } }
+  @keyframes balancinho { 0%,100% { transform:rotate(-4deg) } 50% { transform:rotate(4deg) } }
+  @keyframes ping       { 0% { box-shadow:0 0 0 0 rgba(255,255,255,.8) } 100% { box-shadow:0 0 0 10px rgba(255,255,255,0) } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gCristal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0f7"/><stop offset=".45" stop-color="#ff9fcf"/><stop offset="1" stop-color="#c4519a"/></linearGradient>
+    <linearGradient id="gPetala" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffa6d2"/><stop offset="1" stop-color="#ff4d9d"/></linearGradient>
+  </defs>
+  <symbol id="ic-cristal" viewBox="0 0 24 32">
+    <path d="M12 1 L23 11 L12 31 L1 11 Z" fill="url(#gCristal)"/>
+    <path d="M12 1 L6.5 11 L12 15 Z" fill="#fff" opacity=".4"/>
+    <path d="M1 11 H23 M12 1 L6.5 11 L12 31 M12 1 L17.5 11 L12 31" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width=".8"/>
+    <path d="M12 1 L23 11 L12 31 L1 11 Z" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="1"/>
+  </symbol>
+  <symbol id="ic-petala" viewBox="0 0 24 24">
+    <path d="M12 1 C19 3 23 10 21 16 C19.5 21 15.5 23.5 12 23 C8.5 23.5 4.5 21 3 16 C1 10 5 3 12 1 Z" fill="url(#gPetala)"/>
+    <path d="M12 4 C12.6 10 12.6 16 12 22" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1"/>
+  </symbol>
+  <symbol id="ic-brilho" viewBox="0 0 24 24"><path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12 6.4-.6 11.4-5.6 12-12z"/></symbol>
+  <symbol id="ic-coracao" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></symbol>
+  <symbol id="ic-twitch" viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></symbol>
+  <symbol id="ic-instagram" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm0 2A3.8 3.8 0 0 0 4 7.8v8.4A3.8 3.8 0 0 0 7.8 20h8.4a3.8 3.8 0 0 0 3.8-3.8V7.8A3.8 3.8 0 0 0 16.2 4zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.4-3.6a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></symbol>
+  <symbol id="ic-x" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></symbol>
+  <symbol id="ic-tiktok" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></symbol>
+</svg>
+
+<template id="laco-modelo">
+  <svg class="laco" viewBox="0 0 160 90">
+    <defs>
+      <linearGradient id="gLaco" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--rosa)"/><stop offset="1" style="stop-color:var(--lilas)"/></linearGradient>
+      <linearGradient id="gLaco2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--lilas)"/><stop offset="1" style="stop-color:var(--rosa)"/></linearGradient>
+    </defs>
+    <path d="M74 50 C66 62 58 76 42 86 L62 84 C68 74 74 64 78 54 Z" fill="url(#gLaco2)" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/>
+    <path d="M86 50 C94 62 102 76 118 86 L98 84 C92 74 86 64 82 54 Z" fill="url(#gLaco2)" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/>
+    <path d="M80 42 C60 8 10 10 12 36 C14 60 58 64 80 42 Z" fill="url(#gLaco)" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>
+    <path d="M80 42 C100 8 150 10 148 36 C146 60 102 64 80 42 Z" fill="url(#gLaco)" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>
+    <path d="M76 42 C62 24 28 24 28 37 C28 50 62 52 76 42 Z" fill="#fff" opacity=".22"/>
+    <path d="M84 42 C98 24 132 24 132 37 C132 50 98 52 84 42 Z" fill="#fff" opacity=".22"/>
+    <ellipse cx="80" cy="42" rx="12" ry="10" style="fill:var(--rosa-claro);stroke:var(--rosa)" stroke-width="2"/>
+    <ellipse cx="77" cy="38" rx="4" ry="2.5" fill="#fff" opacity=".85"/>
+  </svg>
+</template>
+
+<div class="palco">
+  <div class="fundo"></div>
+  <div class="bokeh"></div>
+  <div class="particulas"></div>
+  <div class="moldura"></div>
+  <div class="centro">
+    <div class="cartao">
+      <div class="rotulo"><i></i><span></span></div>
+      <div class="relogio">
+        <svg class="anel-tempo" viewBox="0 0 360 360">
+          <defs><linearGradient id="gTempo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--rosa)"/><stop offset=".5" style="stop-color:var(--rosa-claro)"/><stop offset="1" style="stop-color:var(--lilas)"/></linearGradient></defs>
+          <circle class="trilho" cx="180" cy="180" r="155"/>
+          <circle class="progresso" cx="180" cy="180" r="155"/>
+        </svg>
+        <div class="tempo">10:00</div>
+      </div>
+      <div class="nome"></div>
+      <div class="campea"><b>✦</b><span></span><b>✦</b></div>
+      <div class="redes"></div>
+    </div>
+  </div>
+  <div class="rodape"></div>
+</div>
+
+<script>
+(function () {
+  const C = CONFIG, W = 1920, H = 1080;
+  const palco = document.querySelector('.palco');
+  const root = document.documentElement.style;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const escolhe = arr => arr[Math.floor(Math.random() * arr.length)];
+  for (const k in C.cores) root.setProperty('--' + k.replace(/[A-Z]/g, m => '-' + m.toLowerCase()), C.cores[k]);
+
+  // encaixa o palco 1920x1080 no tamanho da janela / da fonte no OBS
+  function ajustar() {
+    const s = Math.min(innerWidth / W, innerHeight / H);
+    palco.style.transform = 'translate(' + (innerWidth - W * s) / 2 + 'px,' + (innerHeight - H * s) / 2 + 'px) scale(' + s + ')';
+  }
+  addEventListener('resize', ajustar); ajustar();
+
+  // textos
+  document.querySelector('.rotulo span').textContent = C.rotulo;
+  document.querySelector('.nome').textContent = C.nome;
+  document.querySelector('.campea span').textContent = C.campea;
+  const rodape = document.querySelector('.rodape');
+  if (C.rodape) rodape.textContent = C.rodape; else rodape.remove();
+  const redes = document.querySelector('.redes');
+  C.redes.forEach(r => {
+    const a = document.createElement('div');
+    a.className = 'rede';
+    a.innerHTML = '<i><svg viewBox="0 0 24 24"><use href="#ic-' + r.rede + '"/></svg></i><span></span>';
+    a.querySelector('span').textContent = r.texto;
+    redes.appendChild(a);
+  });
+
+  // moldura em volta da tela: anel com gradiente girando + corações nos cantos + lacinho
+  const mold = document.querySelector('.moldura'), ml = W - 52, ma = H - 52, mr = 40;
+  mold.innerHTML =
+    '<svg class="anel" width="' + ml + '" height="' + ma + '" viewBox="0 0 ' + ml + ' ' + ma + '">' +
+      '<defs><linearGradient id="gMold" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="' + C.cores.rosa + '"/><stop offset=".45" stop-color="' + C.cores.lilas + '"/><stop offset="1" stop-color="' + C.cores.pessego + '"/>' +
+        '<animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="12s" repeatCount="indefinite"/>' +
+      '</linearGradient></defs>' +
+      '<rect x="3" y="3" width="' + (ml - 6) + '" height="' + (ma - 6) + '" rx="' + mr + '" fill="none" stroke="url(#gMold)" stroke-width="6"/>' +
+      '<rect x="11" y="11" width="' + (ml - 22) + '" height="' + (ma - 22) + '" rx="' + (mr - 8) + '" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.5"/>' +
+    '</svg>' +
+    [['left:-8px;top:-8px', '-20deg'], ['right:-8px;top:-8px', '20deg'], ['left:-8px;bottom:-8px', '20deg'], ['right:-8px;bottom:-8px', '-20deg']]
+      .map(p => '<svg class="canto" style="' + p[0] + ';--rot:' + p[1] + '" viewBox="0 0 24 24"><use href="#ic-coracao"/></svg>').join('') +
+    (C.laco ? document.getElementById('laco-modelo').innerHTML : '');
+
+  // bolinhas de luz desfocadas no fundo
+  const bokeh = document.querySelector('.bokeh');
+  for (let k = 0; k < 10; k++) {
+    const s = document.createElement('span'), t = rnd(140, 360);
+    s.style.cssText = 'left:' + rnd(-100, W) + 'px;top:' + rnd(-100, H) + 'px;width:' + t + 'px;height:' + t + 'px;opacity:' + rnd(.25, .5) + ';--dur:' + rnd(6, 12) + 's;--delay:-' + rnd(0, 12) + 's';
+    bokeh.appendChild(s);
+  }
+
+  // partículas
+  const P = document.querySelector('.particulas');
+  const cores = [C.cores.rosa, C.cores.rosaClaro, C.cores.lilas, C.cores.pessego, '#ffffff'];
+  const lateral = () => Math.random() < .5 ? rnd(60, 380) : rnd(1540, 1860);   // fora do cartão
+
+  for (let k = 0; k < C.cristais; k++) {                                        // cristais flutuando
+    const d = document.createElement('div');
+    d.className = 'cristal';
+    d.style.cssText = 'left:' + lateral() + 'px;top:' + rnd(80, 940) + 'px;--tam:' + rnd(34, 90) + 'px;--rot:' + rnd(-30, 30) + 'deg;--dur:' + rnd(4, 8) + 's;--delay:-' + rnd(0, 8) + 's';
+    d.innerHTML = '<svg viewBox="0 0 24 32"><use href="#ic-cristal"/></svg>';
+    P.appendChild(d);
+  }
+  for (let k = 0; k < C.petalas; k++) {                                         // pétalas caindo
+    const d = document.createElement('div'), dur = rnd(9, 16);
+    d.className = 'petala';
+    d.style.cssText = 'left:' + rnd(0, W) + 'px;--tam:' + rnd(18, 40) + 'px;--dur:' + dur + 's;--delay:-' + rnd(0, dur) + 's;--desvio:' + rnd(-160, 160) + 'px';
+    d.innerHTML = '<i style="animation-duration:' + rnd(2, 4) + 's"><svg viewBox="0 0 24 24"><use href="#ic-petala"/></svg></i>';
+    P.appendChild(d);
+  }
+  const glifos = ['♪', '♫', '♬', '♩'];
+  for (let k = 0; k < C.notas; k++) {                                           // notinhas subindo
+    const d = document.createElement('div'), dur = rnd(8, 14);
+    d.className = 'nota';
+    d.style.cssText = 'left:' + lateral() + 'px;--tam:' + rnd(28, 60) + 'px;--dur:' + dur + 's;--delay:-' + rnd(0, dur) + 's';
+    d.textContent = escolhe(glifos);
+    P.appendChild(d);
+  }
+  for (let k = 0; k < C.brilhos; k++) {                                         // brilhinhos
+    const d = document.createElement('div'), dur = rnd(1.8, 4);
+    d.className = 'brilhinho';
+    d.style.cssText = 'left:' + rnd(20, W - 20) + 'px;top:' + rnd(20, H - 20) + 'px;--tam:' + rnd(10, 28) + 'px;--cor:' + escolhe(cores) + ';--dur:' + dur + 's;--delay:-' + rnd(0, dur) + 's';
+    d.innerHTML = '<svg viewBox="0 0 24 24"><use href="#ic-brilho"/></svg>';
+    P.appendChild(d);
+  }
+
+  // contagem regressiva (?min=5 no link muda a duração)
+  const pMin = parseFloat(new URLSearchParams(location.search).get('min'));
+  const minutos = pMin > 0 ? pMin : C.minutos;
+  const total = Math.round(minutos * 60) * 1000, fim = Date.now() + total;
+  const tempo = document.querySelector('.tempo'), prog = document.querySelector('.progresso'), rotulo = document.querySelector('.rotulo span');
+  const CIRC = 2 * Math.PI * 155;
+  prog.style.strokeDasharray = CIRC;
+  const dois = n => String(n).padStart(2, '0');
+  let timer;
+  function tick() {
+    const resta = Math.max(0, fim - Date.now()), s = Math.ceil(resta / 1000);
+    tempo.textContent = dois(Math.floor(s / 60)) + ':' + dois(s % 60);
+    prog.style.strokeDashoffset = CIRC * (1 - resta / total);
+    if (resta <= 0) {
+      clearInterval(timer);
+      document.body.classList.add('fim');
+      rotulo.textContent = C.rotuloFinal;
+      prog.style.strokeDashoffset = 0;          // anel volta a ficar cheio, brilhando
+    }
+  }
+  tick();
+  timer = setInterval(tick, 250);
+})();
+</script>
+</body>
+</html>

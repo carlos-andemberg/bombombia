@@ -6,7 +6,8 @@ Molduras animadas pro OBS (fonte **Navegador**), com fundo transparente. Feitas 
 |---|---|---|
 | `moldura-camera.html` | Só a moldura da câmera: anel com gradiente girando, lacinho, corações nos cantos, "AO VIVO" e etiqueta com o nome | **1200 × 780** |
 | `moldura-live.html` | Moldura da tela inteira + moldura da câmera + "AO VIVO" + rodapé com as redes | **1920 × 1080** |
-| `index.html` | Página inicial com os links das duas | — |
+| `inicio.html` | Tela de início da live: contagem regressiva de 10 min, tema Seraphine Rosa de Cristal, nome e redes | **1920 × 1080** |
+| `index.html` | Página inicial com os links de tudo | — |
 
 ## Usar no OBS
 
@@ -17,6 +18,12 @@ Molduras animadas pro OBS (fonte **Navegador**), com fundo transparente. Feitas 
 4. Na lista de fontes, deixe a moldura **acima** da câmera e arraste a câmera até encaixar dentro do anel.
 
 Abrindo o link num navegador normal aparece um fundo escuro de exemplo, só pra visualizar. Dentro do OBS o fundo fica transparente automaticamente.
+
+## Tela de início (contagem regressiva)
+
+`inicio.html` conta 10 minutos e, no 00:00, troca pra "começando! 💖". Pra mudar o tempo sem editar o arquivo, use o link com `?min=`: `https://SEU-DOMINIO/inicio.html?min=5`.
+
+Na fonte Navegador do OBS, marque **Atualizar o navegador quando a cena ficar ativa** — assim a contagem recomeça toda vez que você entra na cena de início.
 
 ## Personalizar
 
