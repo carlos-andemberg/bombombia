@@ -7,6 +7,7 @@ Molduras animadas pro OBS (fonte **Navegador**), com fundo transparente. Feitas 
 | `moldura-camera.html` | Só a moldura da câmera: anel com gradiente girando, lacinho, corações nos cantos, "AO VIVO" e etiqueta com o nome | **1200 × 780** |
 | `moldura-live.html` | Moldura da tela inteira + moldura da câmera + "AO VIVO" + rodapé com as redes | **1920 × 1080** |
 | `inicio.html` | Tela de início da live: contagem regressiva de 10 min, tema Seraphine Rosa de Cristal, nome e redes | **1920 × 1080** |
+| `volto-ja.html` | Tela de "volto já": splash art da Seraphine, cronômetro de quanto tempo saiu, nome e redes | **1920 × 1080** |
 | `index.html` | Página inicial com os links de tudo | — |
 
 ## Usar no OBS
@@ -24,6 +25,12 @@ Abrindo o link num navegador normal aparece um fundo escuro de exemplo, só pra 
 `inicio.html` conta 10 minutos e, no 00:00, troca pra "começando! 💖". Pra mudar o tempo sem editar o arquivo, use o link com `?min=`: `https://SEU-DOMINIO/inicio.html?min=5`.
 
 Na fonte Navegador do OBS, marque **Atualizar o navegador quando a cena ficar ativa** — assim a contagem recomeça toda vez que você entra na cena de início.
+
+## Tela de "volto já"
+
+`volto-ja.html` mostra a splash art oficial da Seraphine (vinda do Data Dragon, o CDN da Riot) com um cronômetro de quanto tempo você está fora. A skin padrão é a **Hino ao Amor** (69); pra trocar, edite `CONFIG.skin` ou use o link: `volto-ja.html?skin=24` (24 = Corte das Fadas, 43 = Ave de Batalha, 34 = Guardiã Estelar, 14 = Canção do Oceano, 0 = clássica). Pra usar uma imagem sua, coloque o link dela em `CONFIG.imagem`.
+
+Aqui também vale marcar **Atualizar o navegador quando a cena ficar ativa** no OBS, pra o cronômetro recomeçar do zero.
 
 ## Personalizar
 

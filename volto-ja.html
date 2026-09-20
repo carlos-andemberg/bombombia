@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Volto já</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Fredoka:wght@500;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<!--
+  ================================================================
+   TELA DE "VOLTO JA"  -  com a Seraphine (OBS, 1920 x 1080)
+  ================================================================
+   NO OBS
+     Fontes -> + -> Navegador -> URL desta pagina (ou "Arquivo local")
+     Largura 1920, Altura 1080.
+     Marque "Atualizar o navegador quando a cena ficar ativa":
+     assim o cronometro recomeca do zero toda vez que entra na cena.
+
+   A ARTE
+     A splash art vem do Data Dragon (CDN oficial da Riot).
+     Numero da skin em CONFIG.skin, ou pelo link: volto-ja.html?skin=24
+       69 = Hino ao Amor    24 = Corte das Fadas    43 = Ave de Batalha
+       34 = Guardia Estelar 14 = Cancao do Oceano   0  = classica
+     Quer usar uma imagem sua? Coloque o link dela em CONFIG.imagem.
+  ================================================================
+-->
+<script>
+const CONFIG = {
+  nome: "bombombia",
+  rotulo: "pausa rapidinha",                    // selo em cima do título
+  titulo: "volto já",                           // texto grandão
+  frase: "não sai daí que já já eu volto 💖",    // frase embaixo do título
+  cronometro: true,                             // mostra há quanto tempo saiu
+
+  skin: 69,                                     // Seraphine Hino ao Amor (veja a lista lá em cima)
+  imagem: "",                                   // link de outra imagem (se preencher, ignora a skin)
+  foco: "60% 30%",                              // qual parte da arte fica em destaque (x% y%)
+  deslocar: 340,                                // empurra a arte pra direita (px), pra sobrar espaço pro texto
+  credito: "arte: Riot Games",                  // textinho no canto ("" = esconde)
+
+  redes: [
+    { rede: "twitch",    texto: "twitch.tv/bombombia" },
+    { rede: "instagram", texto: "@_pereirabiaa" },
+    { rede: "x",         texto: "@bombombiaa" },
+    { rede: "tiktok",    texto: "@bombombia" },
+  ],
+
+  cores: {
+    rosa:      "#ff5fa8",
+    rosaClaro: "#ffb3d6",
+    lilas:     "#b57bff",
+    pessego:   "#ffb28a",
+    fundo:     "#3b0a2f",   // cor que aparece atrás da arte (e enquanto ela carrega)
+  },
+
+  petalas: 12, notas: 6, brilhos: 30,
+  laco: true,
+};
+</script>
+
+<style>
+  :root { --rosa:#ff5fa8; --rosa-claro:#ffb3d6; --lilas:#b57bff; --pessego:#ffb28a; --fundo:#3b0a2f; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:var(--fundo); color:#fff; font-family:'Quicksand','Segoe UI',Arial,sans-serif; }
+  .palco { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 0; overflow:hidden; background:radial-gradient(ellipse at 20% 30%, rgba(255,95,168,.35), transparent 55%), linear-gradient(160deg, var(--fundo), #5a1246 55%, #2c0b3a); }
+
+  /* ---------- a arte ---------- */
+  .arte { position:absolute; top:0; bottom:0; left:var(--arte-x); right:-160px; overflow:hidden; -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 30%); mask-image:linear-gradient(90deg, transparent 0, #000 30%); }
+  .arte img { width:100%; height:100%; object-fit:cover; object-position:var(--foco); transform-origin:var(--foco); animation:respirar 40s ease-in-out infinite alternate; }
+  .veu { position:absolute; inset:0;
+    background:
+      linear-gradient(90deg, rgba(59,10,47,.97) 0%, rgba(59,10,47,.92) 22%, rgba(59,10,47,.55) 45%, rgba(59,10,47,.10) 68%, rgba(59,10,47,0) 100%),
+      linear-gradient(0deg, rgba(30,5,30,.75) 0%, rgba(30,5,30,0) 30%),
+      linear-gradient(180deg, rgba(30,5,30,.45) 0%, rgba(30,5,30,0) 22%); }
+  .particulas { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+
+  /* ---------- partículas ---------- */
+  .petala { position:absolute; top:-70px; width:var(--tam); height:var(--tam); animation:cair var(--dur) linear var(--delay) infinite; }
+  .petala i { display:block; width:100%; height:100%; animation:girar 3s ease-in-out infinite alternate; }
+  .petala svg { display:block; width:100%; height:100%; filter:drop-shadow(0 2px 6px rgba(0,0,0,.25)); }
+  .nota { position:absolute; bottom:-80px; font-size:var(--tam); line-height:1; color:rgba(255,255,255,.8); text-shadow:0 0 14px var(--rosa); animation:subirNota var(--dur) linear var(--delay) infinite; }
+  .brilhinho { position:absolute; width:var(--tam); height:var(--tam); margin:calc(var(--tam) / -2) 0 0 calc(var(--tam) / -2); animation:piscar var(--dur) ease-in-out var(--delay) infinite; }
+  .brilhinho svg { display:block; width:100%; height:100%; fill:#fff; filter:drop-shadow(0 0 5px var(--cor)); }
+
+  /* ---------- moldura em volta da tela ---------- */
+  .moldura { position:absolute; inset:26px; z-index:2; pointer-events:none; }
+  .moldura .anel { position:absolute; left:0; top:0; display:block; overflow:visible; }
+  .moldura .canto { position:absolute; width:40px; height:40px; fill:var(--rosa); stroke:#fff; stroke-width:1.5px; filter:drop-shadow(0 0 8px var(--rosa)); animation:pulsar 2.2s ease-in-out infinite; }
+  .laco { position:absolute; left:50%; margin-left:-90px; top:-38px; width:180px; height:101px; transform-origin:50% 45%; animation:balancinho 4s ease-in-out infinite; filter:drop-shadow(0 4px 8px rgba(0,0,0,.28)); }
+
+  /* ---------- texto do lado esquerdo ---------- */
+  .centro { position:absolute; inset:0; display:flex; align-items:center; padding-left:150px; z-index:3; }
+  .conteudo { max-width:860px; }
+  .rotulo { display:inline-flex; align-items:center; gap:10px; padding:9px 22px 9px 16px; border-radius:999px; background:linear-gradient(95deg, var(--rosa), var(--lilas)); font-weight:700; font-size:18px; letter-spacing:2.5px; text-transform:uppercase; box-shadow:0 6px 18px rgba(0,0,0,.3), 0 0 16px rgba(255,95,168,.5), inset 0 1px 0 rgba(255,255,255,.5); }
+  .rotulo i { width:12px; height:12px; border-radius:50%; background:#fff; animation:ping 1.4s ease-out infinite; }
+  .titulo { margin:6px 0 0 -4px; font-family:'Pacifico','Segoe Script',cursive; font-size:168px; line-height:1.15; white-space:nowrap; background:linear-gradient(95deg, #fff 0%, var(--rosa-claro) 45%, var(--rosa) 100%); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 6px 18px rgba(255,95,168,.55)) drop-shadow(0 2px 4px rgba(0,0,0,.35)); animation:boiar 4.5s ease-in-out infinite alternate; }
+  .frase { margin-top:4px; font-size:34px; font-weight:700; color:rgba(255,255,255,.92); text-shadow:0 2px 12px rgba(0,0,0,.4); }
+  .cronometro { display:inline-flex; align-items:center; gap:12px; margin-top:26px; padding:8px 26px 8px 16px; border-radius:999px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); box-shadow:0 6px 18px rgba(0,0,0,.25); font-family:'Fredoka','Quicksand',sans-serif; font-weight:600; font-size:38px; letter-spacing:1px; font-variant-numeric:tabular-nums; }
+  .cronometro svg { width:30px; height:30px; fill:none; stroke:var(--rosa-claro); stroke-width:2.2; stroke-linecap:round; }
+  .cronometro small { font-family:'Quicksand',sans-serif; font-weight:700; font-size:18px; letter-spacing:1px; color:rgba(255,255,255,.7); text-transform:uppercase; }
+  .assinatura { margin-top:34px; font-family:'Pacifico','Segoe Script',cursive; font-size:42px; line-height:1.2; color:#fff; text-shadow:0 0 18px rgba(255,95,168,.8), 0 2px 6px rgba(0,0,0,.35); }
+  .redes { display:grid; grid-template-columns:repeat(2, max-content); gap:12px 14px; margin-top:12px; }
+  .rede { display:inline-flex; align-items:center; gap:9px; padding:6px 18px 6px 7px; border-radius:999px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); font-weight:700; font-size:20px; box-shadow:0 4px 14px rgba(0,0,0,.25); }
+  .rede i { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--rosa), var(--lilas)); box-shadow:0 0 10px rgba(255,95,168,.5); }
+  .rede svg { width:18px; height:18px; fill:#fff; }
+  .credito { position:absolute; right:52px; bottom:44px; z-index:3; font-size:15px; font-weight:700; letter-spacing:.5px; color:rgba(255,255,255,.45); }
+
+  /* ---------- animações ---------- */
+  @keyframes respirar   { from { transform:scale(1) } to { transform:scale(1.07) } }
+  @keyframes cair       { 0% { transform:translate(0,0); opacity:0 } 8% { opacity:.95 } 90% { opacity:.95 } 100% { transform:translate(var(--desvio), 1220px); opacity:0 } }
+  @keyframes girar      { from { transform:rotate(-45deg) } to { transform:rotate(45deg) } }
+  @keyframes subirNota  { 0% { transform:translateY(0) rotate(-10deg); opacity:0 } 10% { opacity:.85 } 85% { opacity:.85 } 100% { transform:translateY(-1000px) rotate(10deg); opacity:0 } }
+  @keyframes piscar     { 0%,100% { transform:scale(0) rotate(0deg); opacity:0 } 50% { transform:scale(1) rotate(90deg); opacity:1 } }
+  @keyframes pulsar     { 0%,100% { transform:rotate(var(--rot,0deg)) scale(1) } 50% { transform:rotate(var(--rot,0deg)) scale(1.12) } }
+  @keyframes boiar      { from { transform:translateY(-6px) } to { transform:translateY(6px) } }
+  @keyframes balancinho { 0%,100% { transform:rotate(-4deg) } 50% { transform:rotate(4deg) } }
+  @keyframes ping       { 0% { box-shadow:0 0 0 0 rgba(255,255,255,.8) } 100% { box-shadow:0 0 0 10px rgba(255,255,255,0) } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gPetala" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffa6d2"/><stop offset="1" stop-color="#ff4d9d"/></linearGradient>
+  </defs>
+  <symbol id="ic-petala" viewBox="0 0 24 24">
+    <path d="M12 1 C19 3 23 10 21 16 C19.5 21 15.5 23.5 12 23 C8.5 23.5 4.5 21 3 16 C1 10 5 3 12 1 Z" fill="url(#gPetala)"/>
+    <path d="M12 4 C12.6 10 12.6 16 12 22" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1"/>
+  </symbol>
+  <symbol id="ic-brilho" viewBox="0 0 24 24"><path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12 6.4-.6 11.4-5.6 12-12z"/></symbol>
+  <symbol id="ic-coracao" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></symbol>
+  <symbol id="ic-twitch" viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></symbol>
+  <symbol id="ic-instagram" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm0 2A3.8 3.8 0 0 0 4 7.8v8.4A3.8 3.8 0 0 0 7.8 20h8.4a3.8 3.8 0 0 0 3.8-3.8V7.8A3.8 3.8 0 0 0 16.2 4zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.4-3.6a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></symbol>
+  <symbol id="ic-x" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></symbol>
+  <symbol id="ic-tiktok" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></symbol>
+</svg>
+
+<template id="laco-modelo">
+  <svg class="laco" viewBox="0 0 160 90">
+    <defs>
+      <linearGradient id="gLaco" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--rosa)"/><stop offset="1" style="stop-color:var(--lilas)"/></linearGradient>
+      <linearGradient id="gLaco2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--lilas)"/><stop offset="1" style="stop-color:var(--rosa)"/></linearGradient>
+    </defs>
+    <path d="M74 50 C66 62 58 76 42 86 L62 84 C68 74 74 64 78 54 Z" fill="url(#gLaco2)" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/>
+    <path d="M86 50 C94 62 102 76 118 86 L98 84 C92 74 86 64 82 54 Z" fill="url(#gLaco2)" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/>
+    <path d="M80 42 C60 8 10 10 12 36 C14 60 58 64 80 42 Z" fill="url(#gLaco)" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>
+    <path d="M80 42 C100 8 150 10 148 36 C146 60 102 64 80 42 Z" fill="url(#gLaco)" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>
+    <path d="M76 42 C62 24 28 24 28 37 C28 50 62 52 76 42 Z" fill="#fff" opacity=".22"/>
+    <path d="M84 42 C98 24 132 24 132 37 C132 50 98 52 84 42 Z" fill="#fff" opacity=".22"/>
+    <ellipse cx="80" cy="42" rx="12" ry="10" style="fill:var(--rosa-claro);stroke:var(--rosa)" stroke-width="2"/>
+    <ellipse cx="77" cy="38" rx="4" ry="2.5" fill="#fff" opacity=".85"/>
+  </svg>
+</template>
+
+<div class="palco">
+  <div class="arte"><img alt=""></div>
+  <div class="veu"></div>
+  <div class="particulas"></div>
+  <div class="moldura"></div>
+  <div class="centro">
+    <div class="conteudo">
+      <div class="rotulo"><i></i><span></span></div>
+      <div class="titulo"></div>
+      <div class="frase"></div>
+      <div class="cronometro">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8.5"/><path d="M12 8.5V13l3 2M9 2.5h6M12 2.5v2"/></svg>
+        <small>fora há</small><span class="tempo">00:00</span>
+      </div>
+      <div class="assinatura"></div>
+      <div class="redes"></div>
+    </div>
+  </div>
+  <div class="credito"></div>
+</div>
+
+<script>
+(function () {
+  const C = CONFIG, W = 1920, H = 1080;
+  const palco = document.querySelector('.palco');
+  const root = document.documentElement.style;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const escolhe = arr => arr[Math.floor(Math.random() * arr.length)];
+  for (const k in C.cores) root.setProperty('--' + k.replace(/[A-Z]/g, m => '-' + m.toLowerCase()), C.cores[k]);
+  const params = new URLSearchParams(location.search);
+
+  // encaixa o palco 1920x1080 no tamanho da janela / da fonte no OBS
+  function ajustar() {
+    const s = Math.min(innerWidth / W, innerHeight / H);
+    palco.style.transform = 'translate(' + (innerWidth - W * s) / 2 + 'px,' + (innerHeight - H * s) / 2 + 'px) scale(' + s + ')';
+  }
+  addEventListener('resize', ajustar); ajustar();
+
+  // a arte: imagem própria, ou a splash da skin (?skin=24 no link troca)
+  const skin = params.get('skin') !== null ? parseInt(params.get('skin'), 10) : C.skin;
+  const img = document.querySelector('.arte img');
+  img.src = C.imagem || 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Seraphine_' + skin + '.jpg';
+  img.style.setProperty('--foco', C.foco);
+  document.querySelector('.arte').style.setProperty('--arte-x', C.deslocar + 'px');
+
+  // textos
+  document.querySelector('.rotulo span').textContent = C.rotulo;
+  document.querySelector('.titulo').textContent = C.titulo;
+  document.querySelector('.frase').textContent = C.frase;
+  document.querySelector('.assinatura').textContent = C.nome;
+  const credito = document.querySelector('.credito');
+  if (C.credito) credito.textContent = C.credito; else credito.remove();
+  const redes = document.querySelector('.redes');
+  C.redes.forEach(r => {
+    const a = document.createElement('div');
+    a.className = 'rede';
+    a.innerHTML = '<i><svg viewBox="0 0 24 24"><use href="#ic-' + r.rede + '"/></svg></i><span></span>';
+    a.querySelector('span').textContent = r.texto;
+    redes.appendChild(a);
+  });
+
+  // cronômetro: há quanto tempo saiu
+  const crono = document.querySelector('.cronometro');
+  if (C.cronometro) {
+    const tempo = crono.querySelector('.tempo'), inicio = Date.now(), dois = n => String(n).padStart(2, '0');
+    setInterval(() => {
+      const s = Math.floor((Date.now() - inicio) / 1000);
+      tempo.textContent = (s >= 3600 ? dois(Math.floor(s / 3600)) + ':' : '') + dois(Math.floor(s / 60) % 60) + ':' + dois(s % 60);
+    }, 500);
+  } else crono.remove();
+
+  // moldura em volta da tela: anel com gradiente girando + corações nos cantos + lacinho
+  const mold = document.querySelector('.moldura'), ml = W - 52, ma = H - 52, mr = 40;
+  mold.innerHTML =
+    '<svg class="anel" width="' + ml + '" height="' + ma + '" viewBox="0 0 ' + ml + ' ' + ma + '">' +
+      '<defs><linearGradient id="gMold" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="' + C.cores.rosa + '"/><stop offset=".45" stop-color="' + C.cores.lilas + '"/><stop offset="1" stop-color="' + C.cores.pessego + '"/>' +
+        '<animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="12s" repeatCount="indefinite"/>' +
+      '</linearGradient></defs>' +
+      '<rect x="3" y="3" width="' + (ml - 6) + '" height="' + (ma - 6) + '" rx="' + mr + '" fill="none" stroke="url(#gMold)" stroke-width="6"/>' +
+      '<rect x="11" y="11" width="' + (ml - 22) + '" height="' + (ma - 22) + '" rx="' + (mr - 8) + '" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.5"/>' +
+    '</svg>' +
+    [['left:-8px;top:-8px', '-20deg'], ['right:-8px;top:-8px', '20deg'], ['left:-8px;bottom:-8px', '20deg'], ['right:-8px;bottom:-8px', '-20deg']]
+      .map(p => '<svg class="canto" style="' + p[0] + ';--rot:' + p[1] + '" viewBox="0 0 24 24"><use href="#ic-coracao"/></svg>').join('') +
+    (C.laco ? document.getElementById('laco-modelo').innerHTML : '');
+
+  // partículas (poucas, pra não esconder a arte)
+  const P = document.querySelector('.particulas');
+  const cores = [C.cores.rosa, C.cores.rosaClaro, C.cores.lilas, C.cores.pessego, '#ffffff'];
+  for (let k = 0; k < C.petalas; k++) {                                         // pétalas caindo
+    const d = document.createElement('div'), dur = rnd(9, 16);
+    d.className = 'petala';
+    d.style.cssText = 'left:' + rnd(0, W) + 'px;--tam:' + rnd(18, 40) + 'px;--dur:' + dur + 's;--delay:-' + rnd(0, dur) + 's;--desvio:' + rnd(-160, 160) + 'px';
+    d.innerHTML = '<i style="animation-duration:' + rnd(2, 4) + 's"><svg viewBox="0 0 24 24"><use href="#ic-petala"/></svg></i>';
+    P.appendChild(d);
+  }
+  const glifos = ['♪', '♫', '♬', '♩'];
+  for (let k = 0; k < C.notas; k++) {                                           // notinhas subindo (só do lado do texto)
+    const d = document.createElement('div'), dur = rnd(8, 14);
+    d.className = 'nota';
+    d.style.cssText = 'left:' + rnd(60, 900) + 'px;--tam:' + rnd(28, 56) + 'px;--dur:' + dur + 's;--delay:-' + rnd(0, dur) + 's';
+    d.textContent = escolhe(glifos);
+    P.appendChild(d);
+  }
+  for (let k = 0; k < C.brilhos; k++) {                                         // brilhinhos
+    const d = document.createElement('div'), dur = rnd(1.8, 4);
+    d.className = 'brilhinho';
+    d.style.cssText = 'left:' + rnd(20, W - 20) + 'px;top:' + rnd(20, H - 20) + 'px;--tam:' + rnd(10, 28) + 'px;--cor:' + escolhe(cores) + ';--dur:' + dur + 's;--delay:-' + rnd(0, dur) + 's';
+    d.innerHTML = '<svg viewBox="0 0 24 24"><use href="#ic-brilho"/></svg>';
+    P.appendChild(d);
+  }
+})();
+</script>
+</body>
+</html>
