@@ -1,4 +1,4 @@
-# Molduras de live da Bombombia 💖
+# Molduras de live da bombombia 💖
 
 Molduras animadas pro OBS (fonte **Navegador**), com fundo transparente. Feitas em HTML/CSS puro — sem build, sem dependências.
 
